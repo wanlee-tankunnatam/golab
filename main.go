@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	config "go-lab/config"
 	"go-lab/router"
 )
@@ -8,6 +9,8 @@ import (
 func main() {
 	config.ConnectPostgres()
 	router.RegisterRoutes()
+
+	fmt.Println("Server running at test")
 
 	// port := "80"
 	// fmt.Printf("Server running at http://0.0.0.0:%s\n", port)
