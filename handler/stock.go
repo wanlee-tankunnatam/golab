@@ -13,6 +13,30 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func GetStockById(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	stock := models.Stock{
+		Balance: 10000.0,
+		Reserve: 0.0,
+		OnHand:  10000.0,
+	}
+
+	log.Printf("Inserting stock: %+v", stock)
+	if result := config.DB.Create(&stock); result.Error != nil {
+		log.Printf("DB error: %v", result.Error)
+		http.Error(w, "Database Error: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(stock)
+}
+
 func InsertStock(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -20,9 +44,9 @@ func InsertStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stock := models.Stock{
-		Balance: 100.0,
+		Balance: 10000.0,
 		Reserve: 0.0,
-		OnHand:  100.0,
+		OnHand:  10000.0,
 	}
 
 	log.Printf("Inserting stock: %+v", stock)

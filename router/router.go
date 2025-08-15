@@ -1,13 +1,21 @@
 package router
 
 import (
-	"net/http"
-
 	"go-lab/handler"
+
+	"github.com/gorilla/mux"
 )
 
-func RegisterRoutes() {
-	http.HandleFunc("/insert-user", handler.InsertUser)
-	http.HandleFunc("/insert-stock", handler.InsertStock)
-	http.HandleFunc("/update-stock", handler.UpdateStock)
+func RegisterRoutes() *mux.Router {
+	router := mux.NewRouter()
+
+	// Users
+	router.HandleFunc("/post-user", handler.InsertUser).Methods("POST")
+
+	// Stock
+	router.HandleFunc("/stock/{id}", handler.GetStockById).Methods("GET")
+	router.HandleFunc("/post-stock", handler.InsertStock).Methods("POST")
+	router.HandleFunc("/put-stock", handler.UpdateStock).Methods("PUT")
+
+	return router
 }
