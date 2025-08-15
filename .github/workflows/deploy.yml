@@ -1,0 +1,52 @@
+name: Build and Deploy Go App via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. ดึงโค้ดจาก repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. ติดตั้ง Go
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      # 3. Build binary
+      - name: Build Go binary
+        run: |
+          go mod tidy
+          go build -o app main.go
+
+      # 4. ส่ง binary ไปที่เซิร์ฟเวอร์
+      - name: Copy binary to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "app"
+          target: "${{ secrets.DEPLOY_PATH }}"
+
+      # 5. SSH เข้าไปและ restart แอป
+      - name: Restart app on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            pkill app || true
+            nohup ./app > app.log 2>&1 &
+            echo "✅ App restarted on server"
