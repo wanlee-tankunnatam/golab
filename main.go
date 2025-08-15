@@ -4,6 +4,8 @@ import (
 	"fmt"
 	config "go-lab/config"
 	"go-lab/router"
+	"log"
+	"net/http"
 )
 
 func main() {
@@ -18,6 +20,6 @@ func main() {
 	// bind ทุก interface (0.0.0.0) เพื่อเรียกจาก IP ภายนอกได้
 	// log.Fatal(http.ListenAndServe("128.199.97.209", nil))
 
-	// fmt.Println("Server running at http://localhost:8080")
-	// log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Server running at http://localhost:80")
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
