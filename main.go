@@ -12,14 +12,8 @@ func main() {
 	config.ConnectPostgres()
 	router.RegisterRoutes()
 
-	fmt.Println("Server running at test")
+	r := router.RegisterRoutes() // เอา router ที่ return มาจาก RegisterRoutes
 
-	// port := "80"
-	// fmt.Printf("Server running at http://0.0.0.0:%s\n", port)
-
-	// bind ทุก interface (0.0.0.0) เพื่อเรียกจาก IP ภายนอกได้
-	// log.Fatal(http.ListenAndServe("128.199.97.209", nil))
-
-	fmt.Println("Server running at http://localhost:80")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	fmt.Println("Server running at http://128.199.97.209:80")
+	log.Fatal(http.ListenAndServe(":80", r)) // ✅ ใส่ router แทน nil
 }

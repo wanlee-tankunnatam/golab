@@ -13,9 +13,9 @@ func RegisterRoutes() *mux.Router {
 	router.HandleFunc("/post-user", handler.InsertUser).Methods("POST")
 
 	// Stock
-	router.HandleFunc("/stock/{id}", handler.GetStockById).Methods("GET")
+	router.HandleFunc("/stock/{id}", handler.GetStockById).Methods("GET") // path param /stock/1
 	router.HandleFunc("/post-stock", handler.InsertStock).Methods("POST")
-	router.HandleFunc("/put-stock", handler.UpdateStock).Methods("PUT")
+	router.HandleFunc("/put-stock", handler.UpdateStock).Methods("PUT") // query param ?id=1&qty=5
 
 	return router
 }
