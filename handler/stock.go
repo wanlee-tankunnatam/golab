@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,31 +10,46 @@ import (
 	config "go-lab/config"
 	models "go-lab/model"
 
+	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 func GetStockById(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	// ตรวจสอบว่าเป็น GET request
+	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	stock := models.Stock{
-		Balance: 10000.0,
-		Reserve: 0.0,
-		OnHand:  10000.0,
-	}
-
-	log.Printf("Inserting stock: %+v", stock)
-	if result := config.DB.Create(&stock); result.Error != nil {
-		log.Printf("DB error: %v", result.Error)
-		http.Error(w, "Database Error: "+result.Error.Error(), http.StatusInternalServerError)
+	// ดึง id จาก path parameter (/stock/{id})
+	vars := mux.Vars(r)
+	idStr, ok := vars["id"]
+	if !ok {
+		http.Error(w, "Missing stock ID", http.StatusBadRequest)
 		return
 	}
 
+	// แปลง id เป็น uint
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid stock ID", http.StatusBadRequest)
+		return
+	}
+
+	// ดึง stock จาก DB
+	var stock models.Stock
+	if result := config.DB.First(&stock, id); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Stock not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Database error: "+result.Error.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// ส่ง response เป็น JSON
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(stock)
 }
 
