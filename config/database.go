@@ -17,8 +17,8 @@ func ConnectPostgres() {
 	// โหลด config จาก ENV (หรือจะฮาร์ดโค้ดไว้ก็ได้ใน dev)
 	host := "128.199.97.209" // eg. "localhost"
 	port := "5432"           // eg. "5432"
-	user := "postgres"       // eg. "postgres"
-	password := "postgres"   // eg. "yourpassword"
+	user := "testqa"         // eg. "postgres"
+	password := "testqa"     // eg. "yourpassword"
 	dbname := "testdb"       // eg. "testdb"
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok",
