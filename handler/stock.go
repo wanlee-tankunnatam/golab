@@ -60,9 +60,9 @@ func InsertStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stock := models.Stock{
-		Balance: 10000.0,
+		Balance: 1000000.0,
 		Reserve: 0.0,
-		OnHand:  10000.0,
+		OnHand:  1000000.0,
 	}
 
 	log.Printf("Inserting stock: %+v", stock)
@@ -78,30 +78,27 @@ func InsertStock(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateStock(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Updating stock 1111")
+	log.Printf("Updating stock request received")
+
 	if r.Method != http.MethodPut {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	log.Printf("Updating stock 2222")
-	// อ่าน stock ID จาก query
+
+	// อ่าน query params
 	idStr := r.URL.Query().Get("id")
-	if idStr == "" {
-		http.Error(w, "Missing stock ID", http.StatusBadRequest)
+	qtyStr := r.URL.Query().Get("qty")
+	if idStr == "" || qtyStr == "" {
+		http.Error(w, "Missing parameters", http.StatusBadRequest)
 		return
 	}
+
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid stock ID", http.StatusBadRequest)
 		return
 	}
 
-	// อ่าน qty
-	qtyStr := r.URL.Query().Get("qty")
-	if qtyStr == "" {
-		http.Error(w, "Missing qty parameter", http.StatusBadRequest)
-		return
-	}
 	qty, err := strconv.ParseFloat(qtyStr, 64)
 	if err != nil || qty < 0 {
 		http.Error(w, "Invalid qty value", http.StatusBadRequest)
@@ -110,15 +107,20 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
 
 	// เริ่ม transaction
 	tx := config.DB.Begin()
+	if tx.Error != nil {
+		http.Error(w, "Database transaction error: "+tx.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// defer rollback ป้องกัน panic / error
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
+			log.Printf("Panic recovered, transaction rolled back: %v", r)
 		}
 	}()
 
 	var stock models.Stock
-
-	// Lock row เพื่อป้องกัน race condition
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&stock, id).Error; err != nil {
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
@@ -129,18 +131,13 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// คำนวณค่าใหม่
-	log.Printf("stock data Stock ID %d before update: Reserve=%f, OnHand=%f", stock.ID, stock.Reserve, stock.OnHand)
-	// return
 	newReserve := stock.Reserve + qty
 	newOnHand := stock.Balance - newReserve
 
-	// Update ทั้ง reserve และ on_hand ใน query เดียว
-	if err := tx.Model(&models.Stock{}).Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"reserve": newReserve,
-			"on_hand": newOnHand,
-		}).Error; err != nil {
+	if err := tx.Model(&models.Stock{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"reserve": newReserve,
+		"on_hand": newOnHand,
+	}).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Database Update Error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -151,16 +148,17 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// อ่านค่าล่าสุดจาก DB
+	// อ่านค่าล่าสุด
 	if err := config.DB.First(&stock, id).Error; err != nil {
 		http.Error(w, "Database Error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// ส่ง response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(stock)
+	if err := json.NewEncoder(w).Encode(stock); err != nil {
+		log.Printf("Failed to encode JSON response: %v", err)
+	}
 
 	log.Printf("Updated stock ID %d: Reserve=%f, OnHand=%f, Balance=%f", stock.ID, stock.Reserve, stock.OnHand, stock.Balance)
 }

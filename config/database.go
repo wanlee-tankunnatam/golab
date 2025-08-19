@@ -1,10 +1,10 @@
-package db
+package config
 
 import (
 	"fmt"
-	"log"
-
 	models "go-lab/model"
+	"log"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -14,15 +14,16 @@ import (
 var DB *gorm.DB
 
 func ConnectPostgres() {
-	// โหลด config จาก ENV (หรือจะฮาร์ดโค้ดไว้ก็ได้ใน dev)
-	host := "128.199.97.209" // eg. "localhost"
-	port := "5432"           // eg. "5432"
-	user := "testqa"         // eg. "postgres"
-	password := "testqa"     // eg. "yourpassword"
-	dbname := "testdb"       // eg. "testdb"
+	host := "128.199.97.209"
+	port := "5432"
+	user := "testqa"
+	password := "testqa"
+	dbname := "testdb"
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok",
-		host, user, password, dbname, port)
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok",
+		host, user, password, dbname, port,
+	)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -32,8 +33,20 @@ func ConnectPostgres() {
 		log.Fatalf("failed to connect to PostgreSQL: %v", err)
 	}
 
-	tables := []interface{}{&models.Users{}, &models.Stock{}}
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Fatalf("failed to get sql.DB: %v", err)
+	}
 
+	// ตั้งค่า connection pool
+	sqlDB.SetMaxOpenConns(50)                 // connection สูงสุด
+	sqlDB.SetMaxIdleConns(10)                 // idle connection
+	sqlDB.SetConnMaxLifetime(time.Minute * 5) // ปิด connection หลัง 5 นาที
+
+	log.Println("Connected to PostgreSQL with connection pool")
+
+	// Migrate tables
+	tables := []interface{}{&models.Stock{}}
 	for _, table := range tables {
 		if !DB.Migrator().HasTable(table) {
 			log.Printf("Table %T not found. Migrating...", table)
@@ -44,6 +57,5 @@ func ConnectPostgres() {
 		} else {
 			log.Printf("Table %T already exists. Skipping migration.", table)
 		}
-
 	}
 }
