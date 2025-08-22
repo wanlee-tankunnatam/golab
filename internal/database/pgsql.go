@@ -31,6 +31,12 @@ func (pg *PostgreSQL) ConnectionURI() string {
 
 	_ = godotenv.Load()
 
+	os.Setenv("PG_HOST", "128.199.97.209")
+	os.Setenv("PG_PORT", "5432")
+	os.Setenv("PG_USER", "postgres")
+	os.Setenv("PG_PASS", "postgres")
+	os.Setenv("PG_DB", "postgres")
+
 	host := os.Getenv("PG_HOST")
 	port := os.Getenv("PG_PORT")
 	user := os.Getenv("PG_USER")
