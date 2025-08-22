@@ -26,7 +26,7 @@ func main() {
 	// Connect to PostgreSQL
 	pool, err := db.Connect()
 	if err != nil {
-		log.Fatalf("failed to connect to PostgreSQL: %v", err)
+		log.Fatalf("failed to connect to PostgreSQL : %v", err)
 	}
 	defer pool.Close()
 
