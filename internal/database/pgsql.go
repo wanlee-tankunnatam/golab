@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -31,17 +30,23 @@ func (pg *PostgreSQL) ConnectionURI() string {
 
 	_ = godotenv.Load()
 
-	os.Setenv("PG_HOST", "128.199.97.209")
-	os.Setenv("PG_PORT", "5432")
-	os.Setenv("PG_USER", "postgres")
-	os.Setenv("PG_PASS", "postgres")
-	os.Setenv("PG_DB", "postgres")
+	// os.Setenv("PG_HOST", "128.199.97.209")
+	// os.Setenv("PG_PORT", "5432")
+	// os.Setenv("PG_USER", "postgres")
+	// os.Setenv("PG_PASS", "postgres")
+	// os.Setenv("PG_DB", "postgres")
 
-	host := os.Getenv("PG_HOST")
-	port := os.Getenv("PG_PORT")
-	user := os.Getenv("PG_USER")
-	pass := os.Getenv("PG_PASS")
-	db := os.Getenv("PG_DB")
+	// host := os.Getenv("PG_HOST")
+	// port := os.Getenv("PG_PORT")
+	// user := os.Getenv("PG_USER")
+	// pass := os.Getenv("PG_PASS")
+	// db := os.Getenv("PG_DB")
+
+	host := "128.199.97.209"
+	port := "5432"
+	user := "postgres"
+	pass := "postgres"
+	db := "postgres"
 	if port == "" {
 		port = "5432"
 	}
