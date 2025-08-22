@@ -16,9 +16,9 @@ var DB *gorm.DB
 func ConnectPostgres() {
 	host := "128.199.97.209"
 	port := "5432"
-	user := "testqa"
-	password := "testqa"
-	dbname := "testdb"
+	user := "postgres"
+	password := "postgres"
+	dbname := "postgres"
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok",
