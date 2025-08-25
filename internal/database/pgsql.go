@@ -42,7 +42,7 @@ func (pg *PostgreSQL) ConnectionURI() string {
 	// pass := os.Getenv("PG_PASS")
 	// db := os.Getenv("PG_DB")
 
-	host := "128.199.97.209"
+	host := "127.0.0.1"
 	port := "5432"
 	user := "postgres"
 	pass := "postgres"

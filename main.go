@@ -87,11 +87,8 @@ func main() {
 			})
 		}
 		// TODO: insert tenant to database here
-		_, err = conn.Exec(
-			c.Context(),
-			`INSERT INTO tenant (name) VALUES ($1)`,
-			req.Name,
-		)
+		_, err = conn.Exec(c.Context(), `INSERT INTO public.tenant (name) VALUES ($1)`, req.Name)
+
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "failed to insert tenant",
