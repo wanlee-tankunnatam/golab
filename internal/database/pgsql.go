@@ -47,9 +47,9 @@ func (pg *PostgreSQL) ConnectionURI() string {
 	user := "postgres"
 	pass := "postgres"
 	db := "postgres"
-	if port == "" {
-		port = "5432"
-	}
+	// if port == "" {
+	// 	port = "5432"
+	// }
 
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pass, host, port, db)
 }
